@@ -26,9 +26,10 @@ export default {
         var myHeaders = new Headers();
         myHeaders.append("Content-Type", "application/json");
         var raw = JSON.stringify({
-          "nome": user,
+        "autorizacao": "string",
+          "name": user,
           "senha": password,
-          "status": null
+          "token": "string"
         });
         var requestOptions = {
           method: 'POST',
@@ -36,7 +37,7 @@ export default {
           body: raw,
           redirect: 'follow'
         };
-        fetch("http://localhost:8080/login", requestOptions)
+        fetch("https://subiter.herokuapp.com/login", requestOptions)
           .then(response => response.text())
           .then(result => {
             var res = JSON.parse(result)

@@ -1,14 +1,18 @@
 <template>
-    <div>
-         <h1>Tela nova</h1>
-    <ul>
-            <li v-for="(dado, i) in api_dados" :key="i">{{dado.id}} ->  {{dado.texto}} -> {{dado.usuario.nome}}</li>
-        </ul>
-    <h2>INSIRA NOVA ANOTACAO</h2>
-    <p>texto: <input type="text" id= "texto" v-model="texto"></p>
+    <div class="container">
+        <h1>ENVIAR IMAGEM</h1>
+        <form id="form" enctype="multipart/form-data">
+            <div class="input-group">
+                <label for="files">Select files</label>
+                <input id="file" type="file" multiple />
+            </div>
+            <button class="submit-btn"  type="submit">Upload</button>
 
-    <button @click="sendInfo()">Ok</button>
+<p>IMAGEM ABAIXO: </p>
+          <p> <img  :src="dados_img"    alt="Red dot" /></p>
+        </form>
     </div>
+
    
 </template>
 <script>
@@ -16,40 +20,53 @@ export default {
     name: "TelanovaView",
     data() {
       return {
-        api_dados: nulll
+        api_dados: null,
+        dados_img: null
 
       }
     },  
     methods: {
       async getJokes(){
-        const req = await fetch("http://localhost:8080/anotacao");
+     var myHeaders = new Headers();
+      var token = localStorage.getItem("Token");
+      console.log(token);
+      myHeaders.append("Content-Type", "application/json");
+      myHeaders.append("Authorization", `${token}`);
+      var requestOptions = {
+        method: "GET",
+        headers: myHeaders,
+        redirect: "follow",
+      };
+        const req = await fetch("https://subiter.herokuapp.com/requests/download/6", requestOptions);
         const dados = await req.json();
         this.api_dados = dados
+        this.dados_img = "data:image/png;base64, "+ dados.img
       },
 
      sendInfo(){
-        var txt = document.getElementById("texto").value;
-        var myHeaders = new Headers();
+        const form = document.getElementById("form");
+const inputFile = document.getElementById("file");
+var myHeaders = new Headers();
         var token = localStorage.getItem("Token");
       console.log(token);
       myHeaders.append("Authorization", `${token}`);
-        myHeaders.append("Content-Type", "application/json");
-        var raw = JSON.stringify({
-          "texto": txt
-        });
-        var requestOptions = {
-          method: 'POST',
-          headers: myHeaders,
-          body: raw,
-          redirect: 'follow'
-        };
-        fetch("http://localhost:8080/anotacao", requestOptions)
-          .then(response => response.text())
-          .then(result => {
-            var res = JSON.parse(result)
-            console.log(res)
-          })
-          .catch(error => console.log('error', error));
+
+const formData = new FormData();
+
+const handleSubmit = (event) => {
+    event.preventDefault();
+
+    for (const file of inputFile.files) {
+        formData.append("files", file);
+    }
+
+    fetch("https://subiter.herokuapp.com/requests/upload/9", {
+        method: "post",
+        body: formData,
+    }).catch((error) => ("Something went wrong!", error));
+};
+
+form.addEventListener("submit", handleSubmit);
       }
       
     },
